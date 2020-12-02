@@ -1,3 +1,4 @@
+import entity.NewsDetail;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -12,19 +13,36 @@ import java.util.concurrent.Executors;
 
 public class CrawImage {
 
-    public static void getUrl(Document document, ExecutorService pool) {
+    public static void getUrl2(Document document, ExecutorService pool) {
         Element id = document.getElementById("listBox");
         Elements els = id.getElementsByTag("img");
 
         for (Element el : els) {
             //url.add(el.attr("src"));
+            String title = el.getElementsByTag("a").get(0).text();
             String imageUrl = el.attr("src");
             System.out.println("imageUrl==== " + imageUrl);
-            pool.execute(new DownloadImage(imageUrl));
+//            pool.execute(new DownloadImage(imageUrl));
 //            System.out.println(el.attr("src"));
         }
 
     }
+
+    public static void getUrl(Document document, ExecutorService pool) {
+        Elements elements = document.getElementsByClass("item clearfix");
+
+        for (Element e : elements) {
+            Elements els = e.getElementsByTag("img");
+            String imageUrl = els.get(0).attr("src");
+            String title = e.getElementsByTag("a").get(1).text();
+            NewsDetail newsDetail=new NewsDetail();
+            newsDetail.setTitle(title);
+            newsDetail.setUrl(imageUrl);
+            pool.execute(new DownloadImage(newsDetail));
+        }
+
+    }
+
 
     public static void main(String[] args) throws Exception {
         //Set<String> url = new TreeSet<>();
@@ -35,9 +53,9 @@ public class CrawImage {
             pool = Executors.newFixedThreadPool(9);
 
             //获取指定网页源码
-            Document document = Jsoup.connect("http://item.kongfz.com/Cjisuanji/w2/").userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.64 Safari/537.31").get();
+            Document document = Jsoup.connect("http://item.kongfz.com/Cjisuanji/w1/").userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.64 Safari/537.31").get();
             getUrl(document, pool);
-            int a = 4;
+            int a = 100;
             while (a-- != 0) {
                 Element el = document.getElementById("pagerBox");
                 Elements el2 = el.getElementsByClass("next-btn");

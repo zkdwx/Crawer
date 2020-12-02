@@ -6,10 +6,12 @@ import java.net.URL;
 import java.net.URLConnection;
 
 public class DownloadImage implements Runnable {
-    String downUrl;
+//    String downUrl;
 
-    public DownloadImage(String downUrl) {
-        this.downUrl = downUrl;
+    NewsDetail newsDetail;
+
+    public DownloadImage(NewsDetail newsDetail) {
+        this.newsDetail = newsDetail;
     }
 /*
     public void run() {
@@ -53,8 +55,6 @@ public class DownloadImage implements Runnable {
 */
 
     public void run() {
-        NewsDetail newsDetail = new NewsDetail();
-        newsDetail.setUrl(downUrl);
         Jdbc.saveNews(newsDetail);
     }
 }
