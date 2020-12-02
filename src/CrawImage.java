@@ -4,6 +4,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -22,20 +24,17 @@ public class CrawImage {
             String title = el.getElementsByTag("a").get(0).text();
             String imageUrl = el.attr("src");
             System.out.println("imageUrl==== " + imageUrl);
-//            pool.execute(new DownloadImage(imageUrl));
-//            System.out.println(el.attr("src"));
         }
 
     }
 
     public static void getUrl(Document document, ExecutorService pool) {
         Elements elements = document.getElementsByClass("item clearfix");
-
         for (Element e : elements) {
             Elements els = e.getElementsByTag("img");
             String imageUrl = els.get(0).attr("src");
             String title = e.getElementsByTag("a").get(1).text();
-            NewsDetail newsDetail=new NewsDetail();
+            NewsDetail newsDetail = new NewsDetail();
             newsDetail.setTitle(title);
             newsDetail.setUrl(imageUrl);
             pool.execute(new DownloadImage(newsDetail));
@@ -45,37 +44,56 @@ public class CrawImage {
 
 
     public static void main(String[] args) throws Exception {
-        //Set<String> url = new TreeSet<>();
-        try {
-            //创建一个缓冲池
-            ExecutorService pool = Executors.newCachedThreadPool();
-            //设置其容量为9
-            pool = Executors.newFixedThreadPool(9);
 
-            //获取指定网页源码
-            Document document = Jsoup.connect("http://item.kongfz.com/Cjisuanji/w1/").userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.64 Safari/537.31").get();
-            getUrl(document, pool);
-            int a = 100;
-            while (a-- != 0) {
-                Element el = document.getElementById("pagerBox");
-                Elements el2 = el.getElementsByClass("next-btn");
-                if (el2 == null) {
-                    System.out.println("到最后了");
-                    break;
+        //获取列表类目
+        List<String> bookKindList = getBookKindList();
+        bookKindList.forEach(bookListUrl -> {
+
+            try {
+                //创建一个缓冲池
+                ExecutorService pool = Executors.newCachedThreadPool();
+                //设置其容量为9
+                pool = Executors.newFixedThreadPool(20);
+                //获取指定网页源码
+                Document document = Jsoup.connect(bookListUrl).userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.64 Safari/537.31").get();
+                getUrl(document, pool);
+                int a = 100;
+                while (a-- != 0) {
+                    Element el = document.getElementById("pagerBox");
+                    Elements el2 = el.getElementsByClass("next-btn");
+                    if (el2 == null) {
+                        System.out.println("到最后了");
+                        break;
+                    }
+                    String urlIndex = el2.attr("href");
+                    Document document2 = Jsoup.connect(urlIndex).userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.64 Safari/537.31").get();
+                    getUrl(document2, pool);
                 }
-                String urlIndex = el2.attr("href");
-                Document document2 = Jsoup.connect(urlIndex).userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.64 Safari/537.31").get();
-                getUrl(document2, pool);
+                pool.shutdown();
+
+            } catch (Exception e) {
+                System.out.print("嘻嘻" + e);
             }
+        });
+    }
 
-            //遍历set中图片的url
-//            for(String imageUrl:url){
-//                pool.execute(new DownloadImage(imageUrl));
-//            }
-            pool.shutdown();
+    //获取各个类目的列表
+    public static List<String> getBookKindList() {
+        List<String> list = new ArrayList<>();
+        try {
+            //获取指定网页源码
+            Document document = Jsoup.connect("https://www.kongfz.com/").userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.64 Safari/537.31").get();
+            Elements elements = document.getElementsByClass("detail-link");
 
+            for (Element e : elements) {
+                String uri = e.getElementsByTag("a").get(0).attr("href");
+                list.add(uri);
+
+            }
         } catch (Exception e) {
-            System.out.print("嘻嘻" + e);
+            e.printStackTrace();
         }
+
+        return list;
     }
 }
