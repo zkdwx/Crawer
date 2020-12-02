@@ -15,19 +15,6 @@ import java.util.concurrent.Executors;
 
 public class CrawImage {
 
-    public static void getUrl2(Document document, ExecutorService pool) {
-        Element id = document.getElementById("listBox");
-        Elements els = id.getElementsByTag("img");
-
-        for (Element el : els) {
-            //url.add(el.attr("src"));
-            String title = el.getElementsByTag("a").get(0).text();
-            String imageUrl = el.attr("src");
-            System.out.println("imageUrl==== " + imageUrl);
-        }
-
-    }
-
     public static void getUrl(Document document, ExecutorService pool) {
         Elements elements = document.getElementsByClass("item clearfix");
         for (Element e : elements) {
@@ -47,13 +34,11 @@ public class CrawImage {
 
         //获取列表类目
         List<String> bookKindList = getBookKindList();
-        bookKindList.forEach(bookListUrl -> {
 
+        bookKindList.forEach(bookListUrl -> {
             try {
                 //创建一个缓冲池
                 ExecutorService pool = Executors.newCachedThreadPool();
-                //设置其容量为9
-                pool = Executors.newFixedThreadPool(20);
                 //获取指定网页源码
                 Document document = Jsoup.connect(bookListUrl).userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.64 Safari/537.31").get();
                 getUrl(document, pool);
