@@ -2,7 +2,7 @@ package entity;
 
 import java.util.List;
 
-public class NewsDetail {
+public class BookDetail {
 
     private String url;
     private String title;

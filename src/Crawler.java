@@ -1,4 +1,4 @@
-import entity.NewsDetail;
+import entity.BookDetail;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -9,32 +9,11 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-//引入线程池的包
-//引入jsoup的包
-
-
-public class CrawImage {
-
-    public static void getUrl(Document document, ExecutorService pool) {
-        Elements elements = document.getElementsByClass("item clearfix");
-        for (Element e : elements) {
-            Elements els = e.getElementsByTag("img");
-            String imageUrl = els.get(0).attr("src");
-            String title = e.getElementsByTag("a").get(1).text();
-            NewsDetail newsDetail = new NewsDetail();
-            newsDetail.setTitle(title);
-            newsDetail.setUrl(imageUrl);
-            pool.execute(new DownloadImage(newsDetail));
-        }
-
-    }
-
+public class Crawler {
 
     public static void main(String[] args) throws Exception {
-
         //获取列表类目
         List<String> bookKindList = getBookKindList();
-
         bookKindList.forEach(bookListUrl -> {
             try {
                 //创建一个缓冲池
@@ -62,6 +41,19 @@ public class CrawImage {
         });
     }
 
+    public static void getUrl(Document document, ExecutorService pool) {
+        Elements elements = document.getElementsByClass("item clearfix");
+        for (Element e : elements) {
+            Elements els = e.getElementsByTag("img");
+            String imageUrl = els.get(0).attr("src");
+            String title = e.getElementsByTag("a").get(1).text();
+            BookDetail BookDetail = new BookDetail();
+            BookDetail.setTitle(title);
+            BookDetail.setUrl(imageUrl);
+            pool.execute(new CrawlerHelp(BookDetail));
+        }
+    }
+
     //获取各个类目的列表
     public static List<String> getBookKindList() {
         List<String> list = new ArrayList<>();
@@ -73,12 +65,10 @@ public class CrawImage {
             for (Element e : elements) {
                 String uri = e.getElementsByTag("a").get(0).attr("href");
                 list.add(uri);
-
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return list;
     }
 }

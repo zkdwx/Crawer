@@ -2,9 +2,9 @@ package entity;
 
 import java.util.List;
 
-public class NewsList {
+public class BookList {
     private String url;
-    private List<NewsDetail> newsDetaileList;
+    private List<BookDetail> BookDetaileList;
     private String nextPageUrl;
 
     public String getUrl() {
@@ -15,12 +15,12 @@ public class NewsList {
         this.url = url;
     }
 
-    public List<NewsDetail> getNewsDetaileList() {
-        return newsDetaileList;
+    public List<BookDetail> getBookDetaileList() {
+        return BookDetaileList;
     }
 
-    public void setNewsDetaileList(List<NewsDetail> newsDetaileList) {
-        this.newsDetaileList = newsDetaileList;
+    public void setBookDetaileList(List<BookDetail> BookDetaileList) {
+        this.BookDetaileList = BookDetaileList;
     }
 
     public String getNextPageUrl() {
