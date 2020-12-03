@@ -1,4 +1,3 @@
-import entity.BookDetail;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -11,59 +10,49 @@ import java.util.concurrent.Executors;
 
 public class Crawler {
 
-    public static void main(String[] args) throws Exception {
-        //获取列表类目
+    public static void main(String[] args) {
+        //获取所有图书的分类列表
         List<String> bookKindList = getBookKindList();
+        //遍历每个分类的列表，获取每个分类列表的URL
         bookKindList.forEach(bookListUrl -> {
             try {
                 //创建一个缓冲池
                 ExecutorService pool = Executors.newCachedThreadPool();
                 //获取指定网页源码
-                Document document = Jsoup.connect(bookListUrl).userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.64 Safari/537.31").get();
-                getUrl(document, pool);
+                Document document = Jsoup.connect(bookListUrl).userAgent(CommonConstant.USER_AGENT).get();
+                pool.execute(new DocumentRunner(document));
                 int a = 100;
                 while (a-- != 0) {
-                    Element el = document.getElementById("pagerBox");
-                    Elements el2 = el.getElementsByClass("next-btn");
+                    Element el = document.getElementById(CommonConstant.PAGEER_BOX);
+                    Elements el2 = el.getElementsByClass(CommonConstant.NEXT_BTN);
                     if (el2 == null) {
-                        System.out.println("到最后了");
+                        System.out.println("最后一页。。。");
                         break;
                     }
-                    String urlIndex = el2.attr("href");
-                    Document document2 = Jsoup.connect(urlIndex).userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.64 Safari/537.31").get();
-                    getUrl(document2, pool);
+                    String urlIndex = el2.attr(CommonConstant.HREF);
+                    Document document2 = Jsoup.connect(urlIndex).userAgent(CommonConstant.USER_AGENT).get();
+                    pool.execute(new DocumentRunner(document2));
                 }
                 pool.shutdown();
-
             } catch (Exception e) {
-                System.out.print("嘻嘻" + e);
+                e.printStackTrace();
             }
         });
     }
 
-    public static void getUrl(Document document, ExecutorService pool) {
-        Elements elements = document.getElementsByClass("item clearfix");
-        for (Element e : elements) {
-            Elements els = e.getElementsByTag("img");
-            String imageUrl = els.get(0).attr("src");
-            String title = e.getElementsByTag("a").get(1).text();
-            BookDetail BookDetail = new BookDetail();
-            BookDetail.setTitle(title);
-            BookDetail.setUrl(imageUrl);
-            pool.execute(new CrawlerHelp(BookDetail));
-        }
-    }
-
-    //获取各个类目的列表
+    /**
+     * 获取所有图书的分类列表
+     *
+     * @return
+     */
     public static List<String> getBookKindList() {
         List<String> list = new ArrayList<>();
         try {
             //获取指定网页源码
-            Document document = Jsoup.connect("https://www.kongfz.com/").userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.64 Safari/537.31").get();
-            Elements elements = document.getElementsByClass("detail-link");
-
+            Document document = Jsoup.connect(CommonConstant.KONGFZ_URL).userAgent(CommonConstant.USER_AGENT).get();
+            Elements elements = document.getElementsByClass(CommonConstant.DETAIL_LINK);
             for (Element e : elements) {
-                String uri = e.getElementsByTag("a").get(0).attr("href");
+                String uri = e.getElementsByTag(CommonConstant.A).get(0).attr(CommonConstant.HREF);
                 list.add(uri);
             }
         } catch (Exception e) {
